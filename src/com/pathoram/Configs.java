@@ -19,7 +19,7 @@ public class Configs {
 	
 	//storage file directory
 	public static String STORAGE_PATH = 
-			"/home/hadoop/eclipse/PathORAM/serverStorage/bucket_";
+			"./serverStorage/bucket_";
 	
 	
 	
