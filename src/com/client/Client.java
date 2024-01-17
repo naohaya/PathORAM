@@ -188,6 +188,7 @@ public class Client implements ClientInterface{
 		// TODO Auto-generated method stub
 		try {
 			mChannel.close();
+			mThreadGroup.shutdown();
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
