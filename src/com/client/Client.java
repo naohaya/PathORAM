@@ -21,13 +21,26 @@ import com.google.common.primitives.Bytes;
 import com.google.common.primitives.Ints;
 import com.pathoram.*;
 
-public class Client implements ClientInterface{
+/* Cipher */
+import javax.crypto.SecretKey;
+import javax.crypto.spec.GCMParameterSpec;
+
+public class Client implements ClientInterface {
 	
 	public static int requestID = 0;
 	
 	protected InetSocketAddress serverAddress;
 	protected AsynchronousChannelGroup mThreadGroup;
 	protected AsynchronousSocketChannel mChannel;
+
+	/* Cipher */
+//	String pass = "P@55W0rd";
+//	CriptoKeyGenerator keygen = new CriptoKeyGenerator(pass);
+	CriptoKeyGenerator keygen = new CriptoKeyGenerator();
+	SecretKey seckey =  keygen.getKey();
+	GCMParameterSpec param = keygen.getParam();
+	byte[] nonce = keygen.getNonce();
+
 	
 	int[] position_map;
 	Stash stash;
@@ -85,7 +98,11 @@ public class Client implements ClientInterface{
 		
 		//write request
 		if(op == Operation.WRITE){
-			b = new Block(position_map[blockIndex],blockIndex,newData);
+			/* Encryption */
+			byte[] ciphertext = DataCripto.encrypt(newData, seckey, nonce);
+			System.out.println(ciphertext + " by write operation."); // for debug
+			
+			b = new Block(position_map[blockIndex],blockIndex,ciphertext); // put the chipher text into the block
 			stash.add(b);//update block path id and data
 			returndata = newData;
 		}
@@ -95,7 +112,12 @@ public class Client implements ClientInterface{
 				returndata = new byte[Configs.BLOCK_DATA_LEN];
 			}else{
 				returndata = b.getData();
-				b = new Block(position_map[blockIndex],blockIndex,b.getData());
+				/* Decryption */
+				param = keygen.generateGCMParameter(nonce);
+				byte[] deciphertext = DataCripto.decrypt(returndata, seckey, nonce);
+				returndata = deciphertext;
+				System.out.println(returndata + "by read operation."); // for debug
+				b = new Block(position_map[blockIndex],blockIndex,deciphertext);
 				stash.updataBlock(b);//update block path id
 			}
 		}
@@ -249,15 +271,38 @@ public class Client implements ClientInterface{
 	}
 	
 	public static void main(String[] args) {
+		int warmup = 5;
+		int rloop = 1, wloop = 1;
+		if (args.length < 1) {
+			rloop = wloop = 10;
+		} else if (args.length == 2) {
+			rloop = Integer.parseInt(args[0]);
+			wloop = Integer.parseInt(args[1]);
+		} else {
+			System.out.println("Invalid arguments!");
+			System.exit(1);
+		}
 		// TODO Auto-generated method stub
 		Client client = new Client();
 		client.initServer();
-		for(int i=0;i<6;i++){
+		/*** 
+		 * Warmup loops
+		 ***/
+		for(int i=0;i<warmup;i++){
 			byte[] data = new byte[Configs.BLOCK_DATA_LEN];
 			Arrays.fill(data, (byte)i);
 			client.obliviousAccess(i, data, Operation.WRITE);
 		}
-		for(int i=0;i<6;i++){
+
+		/* write loop */
+		for(int i=0;i<wloop;i++){
+			byte[] data = new byte[Configs.BLOCK_DATA_LEN];
+			Arrays.fill(data, (byte)i);
+			client.obliviousAccess(i, data, Operation.WRITE);
+		}
+
+		/* read loop */
+		for(int i=0;i<rloop;i++){
 			byte[] data = new byte[Configs.BLOCK_DATA_LEN];
 			byte[] returndata = client.obliviousAccess(i, data, Operation.READ);
 			for(int j = 0;j<Configs.BLOCK_DATA_LEN;j++){
