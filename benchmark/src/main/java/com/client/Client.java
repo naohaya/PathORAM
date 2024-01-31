@@ -21,6 +21,16 @@ import com.google.common.primitives.Bytes;
 import com.google.common.primitives.Ints;
 
 import org.openjdk.jmh.annotations.Benchmark;
+import org.openjdk.jmh.annotations.Level;
+import org.openjdk.jmh.annotations.Mode;
+import org.openjdk.jmh.annotations.Scope;
+import org.openjdk.jmh.annotations.Setup;
+import org.openjdk.jmh.annotations.State;
+import org.openjdk.jmh.annotations.TearDown;
+import org.openjdk.jmh.runner.Runner;
+import org.openjdk.jmh.runner.RunnerException;
+import org.openjdk.jmh.runner.options.Options;
+import org.openjdk.jmh.runner.options.OptionsBuilder;
 
 @State(Scope.Thread)
 public class Client implements ClientInterface{
@@ -284,30 +294,25 @@ public class Client implements ClientInterface{
 			System.out.println();
 		}
 		*/
+	}
+
+	@TearDown
+	public void tearDown() {
 		client.close();
+	}
+
+
+	public static void main(String[] args) throws RunnerException {
+		Options opt = new OptionsBuilder()
+			.include(Client.class.getSimpleName())
+			.warmupIterations(2)
+			.measurementIterations(3)
+			.forks(1)
+			.mode(Mode.Throughput)
+			.build();
+		new RUnner(opt).run();
 
 	}
 
-	/*
-	public static void main(String[] args) {
-		// TODO Auto-generated method stub
-		Client client = new Client();
-		client.initServer();
-		for(int i=0;i<6;i++){
-			byte[] data = new byte[Configs.BLOCK_DATA_LEN];
-			Arrays.fill(data, (byte)i);
-			client.obliviousAccess(i, data, Operation.WRITE);
-		}
-		for(int i=0;i<6;i++){
-			byte[] data = new byte[Configs.BLOCK_DATA_LEN];
-			byte[] returndata = client.obliviousAccess(i, data, Operation.READ);
-			for(int j = 0;j<Configs.BLOCK_DATA_LEN;j++){
-				System.out.print(returndata[i]);
-			}
-			System.out.println();
-		}
-		client.close();
-	}
-	*/
 
 }
