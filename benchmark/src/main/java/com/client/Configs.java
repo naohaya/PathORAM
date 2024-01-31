@@ -1,5 +1,8 @@
 package com.client;
 
+import org.openjdk.jmh.annotations.Benchmark;
+
+@State(Scope.Thread)
 public class Configs {
 	//thread fixed number
 	public static int THREAD_FIXED = 4;

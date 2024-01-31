@@ -22,6 +22,7 @@ import com.google.common.primitives.Ints;
 
 import org.openjdk.jmh.annotations.Benchmark;
 
+@State(Scope.Thread)
 public class Client implements ClientInterface{
 	
 	public static int requestID = 0;
