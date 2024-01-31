@@ -19,7 +19,7 @@ public class Configs {
 	
 	//storage file directory
 	public static String STORAGE_PATH = 
-			"./serverStorage/bucket_";
+			"/tmp/serverStorage/bucket_";
 	
 	
 	
