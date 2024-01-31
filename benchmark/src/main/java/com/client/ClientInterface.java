@@ -1,6 +1,5 @@
 package com.client;
 
-import com.pathoram.Bucket;
 
 @State
 public interface ClientInterface {
