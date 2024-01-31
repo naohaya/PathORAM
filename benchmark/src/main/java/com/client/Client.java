@@ -310,7 +310,7 @@ public class Client implements ClientInterface{
 			.forks(1)
 			.mode(Mode.Throughput)
 			.build();
-		new RUnner(opt).run();
+		new Runner(opt).run();
 
 	}
 
